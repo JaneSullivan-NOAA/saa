@@ -30,3 +30,15 @@
 #' \item{FMP_SUBAREA}{defined area for location}
 #' }
 "len_bins"
+
+
+#' ageing error data
+#'
+#' A dataset containing age error info
+#'
+#' @format A data frame
+#' \describe{
+#' \item{loc}{long_lat}
+#' \item{FMP_SUBAREA}{defined area for location}
+#' }
+"age_error"
