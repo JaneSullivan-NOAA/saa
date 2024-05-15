@@ -4,7 +4,7 @@
 \alias{saa}
 \title{size at age matrix}
 \usage{
-saa(age_data, length_data, len_bins)
+saa(age_data, length_data, len_bins, rec_age, age_error)
 }
 \arguments{
 \item{age_data}{from ...}
@@ -12,6 +12,10 @@ saa(age_data, length_data, len_bins)
 \item{length_data}{from ...}
 
 \item{len_bins}{length bins}
+
+\item{rec_age}{recruitment start age of model}
+
+\item{age_error}{ageing error matrix}
 }
 \description{
 size at age matrix
