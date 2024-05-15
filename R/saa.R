@@ -3,39 +3,42 @@
 #' @param age_data from ...
 #' @param length_data from ...
 #' @param len_bins length bins
-#'
+#' @param rec_age recruitment start age of model
+#' @param age_error ageing error matrix
 #' @export
 #'
-saa <- function(age_data, length_data, len_bins){
+saa <- function(age_data, length_data, len_bins, rec_age, age_error){
+
   age_data %>%
     dplyr::rename_all(tolower) %>%
-    dplyr::select(year, age, length) %>%
-    dplyr::filter(year>=1990, !is.na(age))  %>%
-    dplyr::select(-year) %>%
-    dplyr::group_by(age) %>%
-    dplyr::filter(dplyr::n()>1) %>%
-    dplyr::group_by(length) %>%
-    dplyr::mutate(n_l = dplyr::n()) %>%
-    dplyr::arrange(age, length) %>%
-    dplyr::group_by(age) %>%
-    dplyr::mutate(sample_size =  dplyr::n()) -> inter
+    dplyr::filter(year>=1990, age %in% rec_age:nrow(age_error))  %>%
+    dplyr::select(age, length) %>%
+    tidytable::filter(.N>1, .by = age) %>%
+    tidytable::mutate(n_l = .N, .by = length) %>%
+    tidytable::mutate(sample_size = .N, .by = age) %>%
+    dplyr::arrange(age, length) -> inter
 
   length_data %>%
     dplyr::rename_all(tolower) %>%
-    dplyr::filter(year>=1990, !is.na(length)) %>%
-    dplyr::group_by(length) %>%
-    dplyr::summarise(tot = dplyr::n()) -> dat
+    dplyr::filter(year>=1990, !is.na(length)) -> dat
+
+  if(!("frequency" %in% names(dat))){
+    dat %>%
+      tidytable::summarise(tot = .N, .by = length) -> dat
+  } else {
+    dat %>%
+      tidytable::summarise(tot = sum(frequency), .by = length) -> dat
+  }
 
   dat %>%
     dplyr::left_join(inter, .) %>%
-    dplyr::group_by(age, length) %>%
-    dplyr::mutate(prop =  dplyr::n() / n_l * tot) %>%
-    dplyr::distinct() %>%
+    tidytable::mutate(prop =  dplyr::n() / n_l * tot, .by = c(age, length)) %>%
+    tidytable::distinct() %>%
     dplyr::group_by(age) %>%
     dplyr::summarise(sample_size = mean(sample_size),
                      Lbar = sum(prop * length) / sum(prop) * 0.1,
                      sd_Lbar = sqrt(1 / (sum(prop) - 1) * sum(prop * (length / 10 - Lbar)^2))) %>%
-    dplyr::filter(sd_Lbar>=0.01) -> laa_stats
+    tidytable::filter(sd_Lbar>=0.01) -> laa_stats
 
   df <- list(ages = laa_stats$age,
              Lbar = laa_stats$Lbar,
