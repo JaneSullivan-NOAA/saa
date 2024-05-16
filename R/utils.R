@@ -7,7 +7,7 @@ prep_alw_data <- function(age_data, length_data, age_error, len_bins, rec_age) {
     tidytable::filter(.N>1, .by = age) %>%
     tidytable::mutate(n_l = .N, .by = length) %>%
     tidytable::mutate(sample_size = .N, .by = age) %>%
-    dplyr::arrange(age, length) -> inter
+    tidytable::arrange(age, length) -> inter
 
   length_data %>%
     dplyr::rename_all(tolower) %>%
@@ -52,8 +52,8 @@ prep_alw_data <- function(age_data, length_data, age_error, len_bins, rec_age) {
     tidytable::mutate(n_al = .N, .by = c(age, length)) %>%
     tidytable::mutate(n_l = .N, .by = length) %>%
     tidytable::filter(n_l>1) %>%
-    arrange(length) %>%
-    left_join(dat %>%
+    tidytable::arrange(length) %>%
+    tidytable::left_join(dat %>%
                 dplyr::mutate(alpha_l = tot / sum(tot))) %>%
     tidytable::mutate(N_al = n_al / n_l * tot) %>%
     tidytable::filter(!is.na(weight)) %>%
@@ -67,9 +67,9 @@ prep_alw_data <- function(age_data, length_data, age_error, len_bins, rec_age) {
     tidytable::mutate(theta_a = sum(r_la), .by = age) -> inter1
 
   inter1 %>%
-    distinct(length, tot) %>%
+    tidytable::distinct(length, tot) %>%
     tidytable::summarise(L = sum(tot)) %>%
-    pull(L) -> L
+    tidytable::pull(L) -> L
 
   inter1 %>%
     dplyr::mutate(v_r_la = alpha_l^2 * theta_la * (1 - theta_la) / (n_l - 1) + alpha_l * (theta_la - theta_a)^2 / L) %>%
@@ -79,8 +79,8 @@ prep_alw_data <- function(age_data, length_data, age_error, len_bins, rec_age) {
                         sqrt(sample_size), .by = age) %>%
     dplyr::select(age, sample_size, wbar, sd) %>%
     dplyr::distinct() %>%
-    filter(sample_size >= 30) %>%
-    arrange(age) -> waa_stats
+    tidytable::filter(sample_size >= 30) %>%
+    tidytable::arrange(age) -> waa_stats
 
   list(dat_saa = list(age = laa_stats$age,
                       n = laa_stats$sample_size,

@@ -9,7 +9,7 @@ saa_waa(age_data, length_data, age_error, len_bins, rec_age)
 \arguments{
 \item{age_data}{goa trawl survey specimen data}
 
-\item{length_data}{goa trawk survey length data}
+\item{length_data}{goa trawl survey length data}
 
 \item{age_error}{age error matrix (since rockfish have a rectangle rather than square)}
 

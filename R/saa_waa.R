@@ -1,7 +1,7 @@
 #' calculate size and weight at age
 #'
 #' @param age_data goa trawl survey specimen data
-#' @param length_data goa trawk survey length data
+#' @param length_data goa trawl survey length data
 #' @param age_error age error matrix (since rockfish have a rectangle rather than square)
 #' @param len_bins length bins used in assessment model
 #' @param rec_age recruitment age used in assessment
@@ -28,6 +28,30 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
               log_alpha = log(0.07),
               log_beta = log(2.07))
 
+  f_saa <- function(pars) {
+    RTMB::getAll(pars, dat_saa)
+    linf = exp(log_linf)
+    k = exp(log_k)
+    alpha = exp(log_alpha)
+    beta = exp(log_beta)
+
+    pred = linf * (1 - exp(-k * (age - t0)))
+    yvar = log(1. + sd^2 / lbar^2)
+    yconst = log(2.0 * pi * yvar * lbar^2)
+    rss = 0.5 * (yconst + (log(pred) - log(lbar))^2 / yvar)
+
+    lpred = alpha * log(age) + beta
+    lnll = sqrt(n) * (log(lpred) - log(sd))^2
+    nll = sum(rss) + sum(lnll)
+
+    RTMB::REPORT(linf)
+    RTMB::REPORT(k)
+    RTMB::REPORT(t0)
+    RTMB::REPORT(alpha)
+    RTMB::REPORT(beta)
+    return(nll)
+  }
+
   obj <- RTMB::MakeADFun(f_saa, par)
   fit <- nlminb(obj$par, obj$fn, obj$gr)
   sd <- RTMB::sdreport(obj)
@@ -37,6 +61,22 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
   dat_lw <- data$dat_lw
   par <- list(log_alpha = log(0.07),
               log_beta = log(2.07))
+  f_lw <- function(pars) {
+    RTMB::getAll(pars, dat_lw)
+    alpha = exp(log_alpha)
+    beta = exp(log_beta)
+
+    pred = alpha * length^beta
+    yvar = log(1. + sd^2 / wbar^2)
+    yconst = log(2.0 * pi * yvar * wbar^2)
+    rss = sum(0.5 * (yconst + (log(pred) - log(wbar))^2 / yvar))
+
+    wpred = alpha * log(length) + beta
+
+    RTMB::REPORT(alpha)
+    RTMB::REPORT(beta)
+    return(rss)
+  }
 
   obj <- RTMB::MakeADFun(f_lw, par)
   fit <- nlminb(obj$par, obj$fn, obj$gr)
@@ -51,6 +91,24 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
              log_k = log(0.1),
              t0 = 0,
              log_beta = log(beta_lw))
+
+  f_waa <- function(pars) {
+    RTMB::getAll(pars, dat_waa)
+    winf = exp(log_winf)
+    k = exp(log_k)
+    beta = exp(log_beta)
+
+    pred = winf * (1 - exp(-1.0 * k * (age - t0)))^beta;
+    yvar = log(1. + sd^2 / wbar^2)
+    yconst = log(2.0 * pi * yvar * wbar^2)
+    rss = sum(0.5 * (yconst + (log(pred) - log(wbar))^2 / yvar))
+
+    RTMB::REPORT(winf)
+    RTMB::REPORT(k)
+    RTMB::REPORT(t0)
+    RTMB::REPORT(beta)
+    return(rss)
+  }
 
   obj <- RTMB::MakeADFun(f_waa, par)
   fit <- nlminb(obj$par, obj$fn, obj$gr)
@@ -115,4 +173,4 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
        )
 }
 
-# saa_waa(age_data, length_data, age_error, len_bins, rec_age=2)
+
