@@ -41,8 +41,8 @@ saa <- function(age_data, length_data, len_bins, rec_age, age_error){
     tidytable::filter(sd_Lbar>=0.01) -> laa_stats
 
   df <- list(ages = laa_stats$age,
-             Lbar = laa_stats$Lbar,
-             sd_Lbar = laa_stats$sd_Lbar)
+             lbar = laa_stats$Lbar,
+             sd = laa_stats$sd_Lbar)
 
   par <- list(log_Linf = log(max(laa_stats$Lbar)),
               log_K = log(0.2),
@@ -58,17 +58,17 @@ saa <- function(age_data, length_data, len_bins, rec_age, age_error){
     k = exp(log_K)
     alpha = exp(log_alpha)
     beta = exp(log_beta)
-    n = 1:length(ages)
+    n = length(ages)
 
     pred = Linf * (1 - exp(-k * (ages - t0)))
-    yvar = log(1. + sd_Lbar^2 / Lbar^2)
-    yconst = log(2.0 * pi * yvar * Lbar^2)
-    rss = 0.5 * (yconst + (log(pred) - log(Lbar))^2 / yvar)
+    yvar = log(1. + sd^2 / lbar^2)
+    yconst = log(2.0 * pi * yvar * lbar^2)
+    rss = 0.5 * (yconst + (log(pred) - log(lbar))^2 / yvar)
 
     lpred = alpha * log(ages) + beta
-    lnll = sqrt(n) * (log(lpred) - log(sd_Lbar))^2
+    lnll = sqrt(n) * (log(lpred) - log(sd))^2
     nll = sum(rss) + sum(lnll)
-    RTMB::REPORT(pred)
+
     RTMB::REPORT(Linf)
     RTMB::REPORT(k)
     RTMB::REPORT(t0)
