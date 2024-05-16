@@ -52,7 +52,7 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
     return(nll)
   }
 
-  obj <- RTMB::MakeADFun(f_saa, par)
+  obj <- RTMB::MakeADFun(f_saa, par, silent = TRUE)
   fit <- nlminb(obj$par, obj$fn, obj$gr)
   sd <- RTMB::sdreport(obj)
   report <- obj$report(obj$env$last.par.best)
@@ -78,7 +78,7 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
     return(rss)
   }
 
-  obj <- RTMB::MakeADFun(f_lw, par)
+  obj <- RTMB::MakeADFun(f_lw, par, silent = TRUE)
   fit <- nlminb(obj$par, obj$fn, obj$gr)
   sd1 <- RTMB::sdreport(obj)
   report1 <- obj$report(obj$env$last.par.best)
@@ -110,7 +110,7 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
     return(rss)
   }
 
-  obj <- RTMB::MakeADFun(f_waa, par)
+  obj <- RTMB::MakeADFun(f_waa, par, silent = TRUE)
   fit <- nlminb(obj$par, obj$fn, obj$gr)
   sd2 <- RTMB::sdreport(obj)
   report2 <- obj$report(obj$env$last.par.best)

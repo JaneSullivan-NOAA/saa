@@ -1,6 +1,7 @@
 # size at age
 1. Install package  
 `remotes::install_github('BenWilliams-NOAA/saa')`  
+`library(saa)`
 2. Pull in example data  
 `data("age_data")`  
 `data("length_data")`  
