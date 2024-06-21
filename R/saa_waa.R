@@ -20,37 +20,39 @@
 saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
   data <- prep_alw_data(age_data, length_data, age_error, len_bins, rec_age)
 
+  # compiler::enableJIT(0)
+
   # run size at age
-  dat_saa <- data$dat_saa
+  dat_saa <<- data$dat_saa
   par <- list(log_linf = log(max(dat_saa$lbar)),
               log_k = log(0.2),
               t0 = -0.1,
               log_alpha = log(0.07),
               log_beta = log(2.07))
 
-  f_saa <- function(pars) {
-    RTMB::getAll(pars, dat_saa)
-    linf = exp(log_linf)
-    k = exp(log_k)
-    alpha = exp(log_alpha)
-    beta = exp(log_beta)
-
-    pred = linf * (1 - exp(-k * (age - t0)))
-    yvar = log(1. + sd^2 / lbar^2)
-    yconst = log(2.0 * pi * yvar * lbar^2)
-    rss = 0.5 * (yconst + (log(pred) - log(lbar))^2 / yvar)
-
-    lpred = alpha * log(age) + beta
-    lnll = sqrt(n) * (log(lpred) - log(sd))^2
-    nll = sum(rss) + sum(lnll)
-
-    RTMB::REPORT(linf)
-    RTMB::REPORT(k)
-    RTMB::REPORT(t0)
-    RTMB::REPORT(alpha)
-    RTMB::REPORT(beta)
-    return(nll)
-  }
+  # f_saa <- function(pars) {
+  #   RTMB::getAll(pars, dat_saa)
+  #   linf = exp(log_linf)
+  #   k = exp(log_k)
+  #   alpha = exp(log_alpha)
+  #   beta = exp(log_beta)
+  #
+  #   pred = linf * (1 - exp(-k * (age - t0)))
+  #   yvar = log(1. + sd^2 / lbar^2)
+  #   yconst = log(2.0 * pi * yvar * lbar^2)
+  #   rss = 0.5 * (yconst + (log(pred) - log(lbar))^2 / yvar)
+  #
+  #   lpred = alpha * log(age) + beta
+  #   lnll = sqrt(n) * (log(lpred) - log(sd))^2
+  #   nll = sum(rss) + sum(lnll)
+  #
+  #   RTMB::REPORT(linf)
+  #   RTMB::REPORT(k)
+  #   RTMB::REPORT(t0)
+  #   RTMB::REPORT(alpha)
+  #   RTMB::REPORT(beta)
+  #   return(nll)
+  # }
 
   obj <- RTMB::MakeADFun(f_saa, par, silent = TRUE)
   fit <- nlminb(obj$par, obj$fn, obj$gr)
@@ -153,8 +155,9 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
                   wbar = ifelse(age==max(age), 0.5 * (wbar + Winf), wbar),
                   wbar = round(wbar, 1)) -> waa
 
+  rm(dat_saa, envir=globalenv())
 
-  list(laa_stats = data$laa_stats,
+  return(list(laa_stats = data$laa_stats,
        lbar_params = data.frame(Linf = Linf,
                                 k = k,
                                 t0 = t0,
@@ -170,7 +173,7 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
                                 t0 = wt0,
                                 beta = wbeta),
        waa = waa
-       )
+       ))
 }
 
 
