@@ -19,11 +19,10 @@
 #'
 saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
   data <- prep_alw_data(age_data, length_data, age_error, len_bins, rec_age)
-
-  # compiler::enableJIT(0)
-
   # run size at age
-  dat_saa <<- data$dat_saa
+  # dat_saa <- local({dat_saa <- dat_saa; environment()})
+  dat_saa <- data$dat_saa
+  environment(f_saa) <- environment()
   par <- list(log_linf = log(max(dat_saa$lbar)),
               log_k = log(0.2),
               t0 = -0.1,
@@ -155,7 +154,7 @@ saa_waa <- function(age_data, length_data, age_error, len_bins, rec_age) {
                   wbar = ifelse(age==max(age), 0.5 * (wbar + Winf), wbar),
                   wbar = round(wbar, 1)) -> waa
 
-  rm(dat_saa, envir=globalenv())
+  environment()
 
   return(list(laa_stats = data$laa_stats,
        lbar_params = data.frame(Linf = Linf,
